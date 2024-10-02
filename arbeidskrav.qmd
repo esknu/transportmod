@@ -6,6 +6,10 @@ editor: visual
 
 ```{r}
 library(tidyverse)
+library(dplyr)
+library(stringr)
+library(readxl)
+
 ```
 
 ```{r}
@@ -15,6 +19,15 @@ datasett_2014_2024 <- read_delim("datasett_2014_2024.csv",
 
 Karmsundsgata <- read_delim("Karmsundsgata.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+
+```
+
+```{r}
+# Cleaning datasets
+
+datasett_2014_2024 <- datasett_2014_2024 |> 
+  select(-Vegreferanse)
 ```
 
 ## Quarto
@@ -39,3 +52,69 @@ You can add options to executable code like this
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+tidligere_data <- read_excel("tidligere_data.xlsx")
+ny_data <- read_excel("ny_data.xlsx")
+```
+
+```{r}
+# Fjerne mellomrom og linjeskift fra kolonnenavnene i 'tidligere_data'
+colnames(tidligere_data) <- str_trim(gsub("\r\n", "", colnames(tidligere_data)))
+
+# Omdøpe variabler i 'tidligere_data' for å matche variablene i 'ny_data'
+tidligere_data <- tidligere_data |> 
+  rename(
+    Kjønn = `Hvilket kjønn identifiserer du som?`,  
+    Alder = `Din alder`,  
+    Utdanning = `Hva er din høyeste utdanning?`,  
+    Næring = `I hvilken næring jobber du?`,  
+    Antall personer i husstanden = Hvor mange personer bor i din husstand?, 
+    Antall med førerkort = Hvor mange i husstanden har førerkort?, 
+    Transportmåte disponibelt = Hva har du til disposisjon?,  
+    Hvordan kommer du deg til jobb = Hva har du reist med siste uken?,  
+    Tid brukt til jobb = Hvor lang er din pendletid til jobb?, 
+    Postnummer = Hva er ditt postnummer (bosted),  
+    Postnummer arbeidssted = Hva er ditt postnummer (arbeidsplass),  
+    Fast oppmøte = Har du fast oppmøtested?,  
+    Parkering ved jobb = Er det gode parkeringsmuligheter nær din arbeidsplass?  
+  )
+
+# Omdøpe variabler i 'ny_data' (hvis nødvendig) for å matche samme tema
+ny_data <- ny_data %>%
+  rename(
+    Kjønn = `Hvilket kjønn identifiserer du deg som?`,
+    Alder = `Hva er alderen din?`,
+    Utdanning = `Hva er din høyeste utdanning?`,  
+    Næring = `I hvilken næring jobber du?`,  
+    Antall personer i husstanden = `Hvor mange bor i din husstand?`,  
+    Antall med førerkort = `Hvor mange har førerkort i din husstand?`,
+    Transportmåte disponibelt = Hvilke muligheter har du tilgjengelig for reise til jobb?,
+    Hvordan kommer du deg til jobb = Hvilke muligheter bruker du for å reise til jobb?, 
+    Tid brukt til jobb = Hvor lang tid bruker du til jobb,
+    Postnummer = Hvilket postnummer er din husstand plassert under?,
+    Postnummer arbeidssted = Hvilket postnummer er arbeidsplassen din plasser under?,  
+    Fast oppmøte = Har du fast oppmøte til jobb?, 
+    Parkering ved jobb = Har du parkeringsmuligheter på jobb? 
+  )
+```
+
+```{r}
+# Velge felles variabler (tema) i begge datasettene
+common_columns <- c("Starttidspunkt", "Kjønn", "Alder", "Utdanning", "Næring", "Inntektsgruppe",
+                    "Antall personer i husstanden", "Antall med førerkort", "Transportmåte disponibelt",
+                    "Hvordan kommer du deg til jobb", "Tid brukt til jobb", "Postnummer",
+                    "Postnummer arbeidssted", "Fast oppmøte", "Parkering ved jobb")
+
+# Slå sammen datasettene
+merged_data <- bind_rows(
+  select(ny_data, all_of(common_columns)),
+  select(tidligere_data, all_of(common_columns))
+)
+
+# Se resultatet
+head(merged_data)
+
+# Sjekk at du har fått 160 observasjoner
+nrow(merged_data)
+```
