@@ -90,4 +90,45 @@ Karmsundsgata <- read_delim("Karmsundsgata.csv",
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
 ```
 
-## 
+```{r}
+datasett_2014_2024 <- datasett_2014_2024 |> 
+  filter(
+    Felt == str_match_all(Felt, "Totalt"
+    )
+  )
+```
+
+```{r}
+datasett_2014_2024 |> 
+  ggplot(
+    aes(
+      x = ar,
+      y = Trafikkmengde,
+      colour = Navn
+    )
+  ) + 
+  geom_line() 
+```
+
+```{r}
+Karmsundsgata <- Karmsundsgata |> 
+  mutate(
+    Fra = `Fra tidspunkt`
+  ) |> 
+  select(-`Fra tidspunkt`)
+```
+
+```{r}
+Karmsundsgata |> 
+     filter(
+    Felt == str_match_all(Felt, "Totalt"),
+    
+  ) |> 
+  ggplot(
+    aes(
+      x = Fra,
+      y = Trafikkmengde
+    )
+  ) +
+  geom_smooth(span = 0.2, se = FALSE) 
+```
