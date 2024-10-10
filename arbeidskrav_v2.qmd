@@ -10,6 +10,7 @@ library(readr)
 library(readxl)
 library(dplyr)
 library(stringr)
+library(lubridate)
 ```
 
 ```{r}
@@ -151,6 +152,31 @@ Karmsundsgata |>
   labs(y = "Count", color = "Vehicle Type") +  # Add labels
   theme_minimal()   # Clean theme for better appearance
 
+```
+
+```{r}
+# Legge til en kolonne med kun timen fra "Fra"-kolonnen
+resultat_per_time <- Karmsundsgata |>
+  mutate(time_of_day = hour(Fra)) |>  # Ekstraherer timen fra tidspunktene
+  group_by(time_of_day) |>  # Grupperer etter time
+  summarise(
+    bil_mean = mean(Bil, na.rm = TRUE),        # Gjennomsnitt for "Bil" per time
+    lastebil_mean = mean(Lastebil, na.rm = TRUE)  # Gjennomsnitt for "Lastebil" per time
+  )
+```
+
+```{r}
+# Plotting gjennomsnittet av "Bil" og "Lastebil" for hver time på døgnet
+ggplot(resultat_per_time, aes(x = time_of_day)) +
+  geom_line(aes(y = bil_mean, color = "Bil"), size = 1) +  # Linjeplot for "Bil"
+  geom_line(aes(y = lastebil_mean, color = "Lastebil"), size = 1) +  # Linjeplot for "Lastebil"
+  labs(title = "Gjennomsnittlig antall biler og lastebiler per time",
+       x = "Time på døgnet",
+       y = "Gjennomsnittlig antall",
+       color = "Kjøretøy") +
+  theme_minimal() +
+  scale_color_manual(values = c("Bil" = "blue", "Lastebil" = "red")) +
+  scale_x_continuous(breaks = 0:23)  # Viser alle timer fra 0 til 23
 ```
 
 ```{r}
