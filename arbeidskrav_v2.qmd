@@ -121,29 +121,36 @@ datasett_2014_2024 |>
 
 ```{r}
 Karmsundsgata <- Karmsundsgata |> 
-  mutate(
-    Fra = `Fra tidspunkt`
+    mutate(
+    Lastebil = `7,6m - 12,5m` + `12,5m - 16,0m` + `>= 16,0m`,
+    Bil = `< 5,6m` + `5,6m - 7,6m`
   ) |> 
-  select(-`Fra tidspunkt`)
+  select(
+    Navn, Vegreferanse, Fra, Bil, Lastebil, Trafikkmengde, Felt
+  ) |> 
+filter(
+    Felt == str_match_all(Felt, "Totalt"),
+  )
 ```
 
 ```{r}
-Karmsundsgata |> 
-     filter(
-    Felt == str_match_all(Felt, "Totalt"),
-  ) |> 
-  rename(Tid = Fra) |> 
-  
-  ggplot(
-    aes(
-      x = Tid,
-      y = Trafikkmengde
-    )
-  ) +
-  geom_smooth(span = 0.2, se = FALSE) +
-  geom_smooth(
-    select(`<5,6m`)
+Karmsundsgata <- Karmsundsgata |> 
+   mutate(
+    Mnd = str_sub(Fra, start = 6, end = 7),
+    Tid = str_sub(Fra, start = 12, 13),
+    Dato = str_sub(Fra, start = 9, end = 10)
   )
+```
+
+```{r}
+# Create the plot
+Karmsundsgata |> 
+  ggplot(aes(x = Tid)) +       # Set the x-axis variable
+  geom_point(aes(y = Bil), color = "blue", size = 2) +   # Points for cars in blue
+  geom_point(aes(y = Lastebil), color = "red", size = 2) + # Points for trucks in red
+  labs(y = "Count", color = "Vehicle Type") +  # Add labels
+  theme_minimal()   # Clean theme for better appearance
+
 ```
 
 ```{r}
