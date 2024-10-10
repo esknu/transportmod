@@ -94,8 +94,17 @@ Karmsundsgata <- read_delim("Karmsundsgata.csv",
 datasett_2014_2024 <- datasett_2014_2024 |> 
   filter(
     Felt == str_match_all(Felt, "Totalt"
-    )
+    ) 
+  ) |> 
+  mutate(
+    Lastebil = `7,6m - 12,5m` + `12,5m - 16,0m` + `>= 16,0m`,
+    Bil = `< 5,6m` + `5,6m - 7,6m`
+  ) |> 
+  select(
+    Navn, Vegreferanse, Fra, ar, Bil, Lastebil, Trafikkmengde, Felt
   )
+
+
 ```
 
 ```{r}
@@ -122,13 +131,28 @@ Karmsundsgata <- Karmsundsgata |>
 Karmsundsgata |> 
      filter(
     Felt == str_match_all(Felt, "Totalt"),
-    
   ) |> 
+  rename(Tid = Fra) |> 
+  
   ggplot(
     aes(
-      x = Fra,
+      x = Tid,
       y = Trafikkmengde
     )
   ) +
-  geom_smooth(span = 0.2, se = FALSE) 
+  geom_smooth(span = 0.2, se = FALSE) +
+  geom_smooth(
+    select(`<5,6m`)
+  )
 ```
+
+```{r}
+
+```
+
+nested models
+
+-   manski model (inneholder for mye, og kan derfor ikke estimeres presist)
+    -   Kelejian-Prucha, SARAR
+    -   Spatial Durbin Model
+    -   Spatial Durbin Error Model
