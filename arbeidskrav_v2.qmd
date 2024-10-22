@@ -306,6 +306,37 @@ print(ny_data %>% select(`Estimer i antall km hvor lang din reise er til jobb.`,
 
 ```{r}
 library(dplyr)
+
+# Opprett en data.frame med transportmidler og antall reiser
+transport_data <- data.frame(
+  transportmiddel = c("Gange", "Bil (Bensin / Diesel)", "Bil (Elektrisk / Hybrid)",
+                      "Buss", "Moped", "Motorsykkel", "Sykkel", 
+                      "EL sykkel", "EL Sparkesykkel", "Annet", "Ingen av de over"),
+  antall_reiser = c(18, 34, 38, 8, 0, 3, 16, 2, 0, 2, 2)
+)
+
+# Anta at 'ny_data' inneholder en kolonne for transportmiddel og avstand
+# Hvis ny_data ikke har transportmiddel kolonnen, kan du legge den til som tidligere foreslått
+# For eksempel (her kan du justere tallene basert på virkelige data):
+ny_data <- ny_data %>%
+  mutate(transportmiddel = sample(transport_data$transportmiddel, nrow(ny_data), replace = TRUE))
+
+# Aggregere dataene for å finne total antall reiser og gjennomsnittlig avstand for hvert transportmiddel
+resultat_tabell <- ny_data %>%
+  group_by(transportmiddel) %>%
+  summarise(
+    antall_reiser = n(),
+    gjennomsnitt_avstand_km = mean(avstand_km, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# Skriv ut den resulterende tabellen
+print(resultat_tabell)
+
+```
+
+```{r}
+library(dplyr)
 library(ggplot2)
 
 # Anta at ny_data også har kolonner for kjønn, alder, inntektsgruppe, utdanning og yrke
