@@ -189,3 +189,110 @@ nested models
     -   Kelejian-Prucha, SARAR
     -   Spatial Durbin Model
     -   Spatial Durbin Error Model
+
+```{r}
+# Anta at datasettet ditt er lastet inn som ny_data
+# Kolonnen som inneholder transportmåtene er "Hvordan kommer du deg til jobb"
+# Vi bruker separate_rows for å splitte opp flervalgssvarene
+
+# Splitte flervalgssvarene i separate rader basert på semikolon
+ny_data_separated <- ny_data %>%
+  separate_rows(`Hvordan kommer du deg til jobb`, sep = ";")
+
+# Lag en frekvensfordeling for de ulike transportmåtene
+frekvensfordeling <- ny_data_separated %>%
+  group_by(`Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(desc(antall))
+
+# Skriv ut frekvensfordelingen
+print(frekvensfordeling)
+
+# Valgfritt: Visualisere frekvensfordelingen med ggplot2
+ggplot(frekvensfordeling, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # For horisontale stolper
+  labs(title = "Frekvensfordeling av transportmåter",
+       x = "Transportmåte",
+       y = "Antall")
+
+```
+
+```{r}
+# Anta at ny_data også har kolonner for kjønn, alder, inntekt, utdanning og yrke
+# For eksempel: "Kjønn", "Alder", "Inntekt", "Utdanning", "Yrke"
+
+# Deskriptiv statistikk for reisemåter etter kjønn
+frekvens_kjonn <- ny_data_separated %>%
+  group_by(Kjønn, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Kjønn, desc(antall))
+
+# Skriv ut frekvensfordelingen etter kjønn
+print(frekvens_kjonn)
+
+# Gjenta for alder, inntekt, utdanning og yrke
+frekvens_alder <- ny_data_separated %>%
+  group_by(Alder, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Alder, desc(antall))
+
+print(frekvens_alder)
+
+# Gjør tilsvarende for inntekt, utdanning og yrke
+# ...
+
+# Valgfritt: Lag visualiseringer for disse gruppene
+library(ggplot2)
+
+# Eksempel for kjønn
+ggplot(frekvens_kjonn, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = Kjønn)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter kjønn",
+       x = "Transportmåte",
+       y = "Antall")
+
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+library(purrr)
+
+# Definerer funksjonen for å rydde opp i avstandsdata
+rydd_avstand <- function(avstand) {
+  # Håndtere NA-verdier
+  if (is.na(avstand)) {
+    return(NA) # Returner NA hvis input er NA
+  }
+  
+  avstand <- tolower(avstand) # Gjør teksten til små bokstaver
+  avstand <- str_replace_all(avstand, "km", "") # Fjern "km"
+  avstand <- str_replace_all(avstand, "ca", "") # Fjern "ca"
+  avstand <- str_replace_all(avstand, ",", ".") # Erstatt komma med punktum
+
+  # Ekstrahere tall fra teksten, men ignorere alt som ikke er avstand
+  tall <- str_extract_all(avstand, "\\b[0-9]+\\.?[0-9]*\\b")[[1]] %>% as.numeric()
+
+  # Håndtere spesifikke scenarier
+  if (length(tall) > 0) {
+    # Fokuserer kun på avstandene
+    # Bruker sum for å summere tall som er avstander
+    total_avstand <- sum(tall[tall > 0], na.rm = TRUE) # Summere relevante tall
+
+    return(total_avstand)
+  } else {
+    return(NA) # Hvis ingen tall ble funnet
+  }
+}
+
+# Anta at dataene dine er i en data.frame kalt ny_data
+# Bruke funksjonen med purrr::map
+ny_data <- ny_data %>%
+  mutate(avstand_km = map_dbl(`Estimer i antall km hvor lang din reise er til jobb.`, rydd_avstand))
+
+# Sjekk resultatene
+print(ny_data %>% select(`Estimer i antall km hvor lang din reise er til jobb.`, avstand_km))
+
+```
