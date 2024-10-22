@@ -370,6 +370,7 @@ ggplot(frekvens_utdanning, aes(x = reorder(`Hvordan kommer du deg til jobb`, ant
 
 # Deskriptiv statistikk for yrke
 frekvens_yrke <- ny_data_separated %>%
+  rename(Yrke = Næring) %>%
   group_by(Yrke, `Hvordan kommer du deg til jobb`) %>%
   summarise(antall = n()) %>%
   arrange(Yrke, desc(antall))
