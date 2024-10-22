@@ -272,6 +272,12 @@ rydd_avstand <- function(avstand) {
   avstand <- str_replace_all(avstand, "ca", "") # Fjern "ca"
   avstand <- str_replace_all(avstand, ",", ".") # Erstatt komma med punktum
 
+  # Håndtere intervaller som "10-30"
+  if (str_detect(avstand, "-")) {
+    intervaller <- str_split(avstand, "-")[[1]] %>% as.numeric()
+    return(mean(intervaller, na.rm = TRUE)) # Returner gjennomsnittet
+  }
+
   # Ekstrahere tall fra teksten, men ignorere alt som ikke er avstand
   tall <- str_extract_all(avstand, "\\b[0-9]+\\.?[0-9]*\\b")[[1]] %>% as.numeric()
 
@@ -294,6 +300,7 @@ ny_data <- ny_data %>%
 
 # Sjekk resultatene
 print(ny_data %>% select(`Estimer i antall km hvor lang din reise er til jobb.`, avstand_km))
+
 
 ```
 
