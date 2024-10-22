@@ -296,3 +296,92 @@ ny_data <- ny_data %>%
 print(ny_data %>% select(`Estimer i antall km hvor lang din reise er til jobb.`, avstand_km))
 
 ```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Anta at ny_data også har kolonner for kjønn, alder, inntektsgruppe, utdanning og yrke
+
+# Deskriptiv statistikk for reisemåter etter kjønn
+frekvens_kjonn <- ny_data_separated %>%
+  group_by(Kjønn, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Kjønn, desc(antall))
+
+# Skriv ut frekvensfordelingen etter kjønn
+print(frekvens_kjonn)
+
+# Visualisering for kjønn
+ggplot(frekvens_kjonn, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = Kjønn)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter kjønn",
+       x = "Transportmåte",
+       y = "Antall")
+
+# Deskriptiv statistikk for reisemåter etter alder
+frekvens_alder <- ny_data_separated %>%
+  group_by(Alder, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Alder, desc(antall))
+
+print(frekvens_alder)
+
+# Visualisering for alder
+ggplot(frekvens_alder, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = as.factor(Alder))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter alder",
+       x = "Transportmåte",
+       y = "Antall")
+
+# Deskriptiv statistikk for inntektsgruppe
+frekvens_inntekt <- ny_data_separated %>%
+  group_by(Inntektsgruppe, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Inntektsgruppe, desc(antall))
+
+print(frekvens_inntekt)
+
+# Visualisering for inntektsgruppe
+ggplot(frekvens_inntekt, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = Inntektsgruppe)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter inntektsgruppe",
+       x = "Transportmåte",
+       y = "Antall")
+
+# Deskriptiv statistikk for utdanning
+frekvens_utdanning <- ny_data_separated %>%
+  group_by(Utdanning, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Utdanning, desc(antall))
+
+print(frekvens_utdanning)
+
+# Visualisering for utdanning
+ggplot(frekvens_utdanning, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = Utdanning)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter utdanning",
+       x = "Transportmåte",
+       y = "Antall")
+
+# Deskriptiv statistikk for yrke
+frekvens_yrke <- ny_data_separated %>%
+  group_by(Yrke, `Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n()) %>%
+  arrange(Yrke, desc(antall))
+
+print(frekvens_yrke)
+
+# Visualisering for yrke
+ggplot(frekvens_yrke, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall, fill = Yrke)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  coord_flip() +
+  labs(title = "Frekvensfordeling av transportmåter etter yrke",
+       x = "Transportmåte",
+       y = "Antall")
+
+```
