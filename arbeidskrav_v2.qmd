@@ -306,32 +306,38 @@ print(ny_data %>% select(`Estimer i antall km hvor lang din reise er til jobb.`,
 
 ```{r}
 library(dplyr)
+library(tidyr)  # For separate_rows
+library(purrr)  # For map_dbl
+library(stringr)  # For string manipulation
+library(ggplot2)  # For plotting
 
-# Opprett en data.frame med transportmidler og antall reiser
-transport_data <- data.frame(
-  transportmiddel = c("Gange", "Bil (Bensin / Diesel)", "Bil (Elektrisk / Hybrid)",
-                      "Buss", "Moped", "Motorsykkel", "Sykkel", 
-                      "EL sykkel", "EL Sparkesykkel", "Annet", "Ingen av de over"),
-  antall_reiser = c(18, 34, 38, 8, 0, 3, 16, 2, 0, 2, 2)
-)
-
-# Anta at 'ny_data' inneholder en kolonne for transportmiddel og avstand
-# Hvis ny_data ikke har transportmiddel kolonnen, kan du legge den til som tidligere foreslått
-# For eksempel (her kan du justere tallene basert på virkelige data):
+# Anta at datasettet ditt er lastet inn som ny_data
+# Rydde opp i avstandene (gjør dette først)
 ny_data <- ny_data %>%
-  mutate(transportmiddel = sample(transport_data$transportmiddel, nrow(ny_data), replace = TRUE))
+  mutate(avstand_km = map_dbl(`Estimer i antall km hvor lang din reise er til jobb.`, rydd_avstand))
 
-# Aggregere dataene for å finne total antall reiser og gjennomsnittlig avstand for hvert transportmiddel
-resultat_tabell <- ny_data %>%
-  group_by(transportmiddel) %>%
-  summarise(
-    antall_reiser = n(),
-    gjennomsnitt_avstand_km = mean(avstand_km, na.rm = TRUE),
-    .groups = 'drop'
-  )
+# Splitte flervalgssvarene i separate rader basert på semikolon
+ny_data_separated <- ny_data %>%
+  separate_rows(`Hvordan kommer du deg til jobb`, sep = ";")
 
-# Skriv ut den resulterende tabellen
-print(resultat_tabell)
+# Filtrer ut avstander over 100 km og lag en frekvensfordeling for de ulike transportmåtene
+frekvensfordeling <- ny_data_separated %>%
+  filter(avstand_km <= 100) %>%  # Filtrer for avstander under eller lik 100 km
+  group_by(`Hvordan kommer du deg til jobb`) %>%
+  summarise(antall = n(),
+            Gjennomsnittlig_avstand = mean(avstand_km, na.rm = TRUE)) %>%
+  arrange(desc(antall))
+
+# Skriv ut frekvensfordelingen
+print(frekvensfordeling)
+
+# Valgfritt: Visualisere frekvensfordelingen med ggplot2
+ggplot(frekvensfordeling, aes(x = reorder(`Hvordan kommer du deg til jobb`, antall), y = antall)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # For horisontale stolper
+  labs(title = "Frekvensfordeling av transportmåter",
+       x = "Transportmåte",
+       y = "Antall")
 
 ```
 
